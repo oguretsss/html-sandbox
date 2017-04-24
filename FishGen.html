@@ -26,7 +26,7 @@
 		<p><b>Total power consumed: <span id="total-power">0</span></b></p>
 		<p><b>Temperature level: <span id="temp-level">0</span></b></p>
 		<p><b>Light level: <span id="light-level">0</span></b></p>
-		<button class="btn btn-alert" id="btn-tick">Tick Time</button>
+		<button class="btn btn-alert" id="btn-reset">Reset</button>
 	</div>
     <h1>Machines:</h1>
 	<div class="col-md-4">
@@ -76,7 +76,7 @@
           <th>Size</th>
           <th>Oxygen</th>
           <th>Pollution</th>
-          <th class="text-right">Comfort</th>
+          <th class="text-right">Discomfort</th>
         </tr>
       </thead>
       <tbody id="fish-table">
@@ -227,7 +227,22 @@
 		refreshAquariumState();
 	}
     $("#add-fish-btn").click(spawnFish);
-    $("#btn-tick").click(tick);
+    $("#btn-reset").click(function(){
+		fishArray = [];
+		tempLevel = 0;
+		lightLevel = 0;
+	
+		pumpPower = 0;
+		filterPower = 0;
+		lightPower = 0;
+		tempPower = 0;
+	
+		totalOxygen = 0;
+		totalPollution = 0;
+		totalPower = 0;
+		refreshAquariumState();
+		$("#fish-table").html('');
+	});
     $("#btn-inc-pump").on('click', { valName: "pump", direction: 1 }, changeAquariumValue);
     $("#btn-dec-pump").on('click', { valName: "pump", direction: (-1) }, changeAquariumValue);
 	
@@ -239,6 +254,10 @@
     
 	$("#btn-inc-heater").on('click', { valName: "temperature", direction: 1 }, changeAquariumValue);
     $("#btn-dec-heater").on('click', { valName: "temperature", direction: (-1) }, changeAquariumValue);
+	
+	spawnFish();
+	var tickTimer = setInterval(tick, 2000);
+	var fishTimer = setInterval(spawnFish, 15000);
     
   });
 </script>
