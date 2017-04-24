@@ -18,27 +18,69 @@
 <div class="container">
       <!-- NAVBAR -->
   <div class="row" >
+	<div class="col-md-4">
+		<h1>Status:</h1>
+		<p><b>Max power: 250</b></p>
+		<p><b>Oxygen deficit: <span id="total-oxygen">0</span></b></p>
+		<p><b>Pollution: <span id="total-pollution">0</span></b></p>
+		<p><b>Total power consumed: <span id="total-power">0</span></b></p>
+		<p><b>Temperature level: <span id="temp-level">0</span></b></p>
+		<p><b>Light level: <span id="light-level">0</span></b></p>
+		<button class="btn btn-alert" id="btn-tick">Tick Time</button>
+	</div>
+    <h1>Machines:</h1>
+	<div class="col-md-4">
+		<div class="jumbotron">
+			<p>Pump power: <span id="pump-power">0</span></p>
+			<div class="btn-group">
+				<button class="btn btn-success" id="btn-inc-pump">+</button>
+				<button class="btn btn-danger" id="btn-dec-pump">-</button>
+			</div>
+		</div>
+		<div>
+		<div class="jumbotron">
+			<p>Filter power: <span id="filter-power">0</span></p>
+			<div class="btn-group">
+				<button class="btn btn-success" id="btn-inc-filter">+</button>
+				<button class="btn btn-danger" id="btn-dec-filter">-</button>
+			</div>
+		</div>
+		</div>
+	</div>
+	<div class="col-md-4">
+		<div class="jumbotron">
+			<p>Light power:<span id="light-power">0</span></p>
+			<div class="btn-group">
+				<button class="btn btn-success" id="btn-inc-light">+</button>
+				<button class="btn btn-danger" id="btn-dec-light">-</button>
+			</div>
+		</div>
+		<div>
+		<div class="jumbotron">
+			<p>Heater power:<span id="temp-power">0</span></p>
+			<div class="btn-group">
+				<button class="btn btn-success" id="btn-inc-heater">+</button>
+				<button class="btn btn-danger" id="btn-dec-heater">-</button>
+			</div>
+		</div>
+		</div>
+		<p>Total power consumed:<span id="total-power">0</span></p>
+	</div>
     <table class="table table-striped">
       <thead>
         <tr>
           <th>Num</th>
+          <th>Health</th>
           <th>Req temperature</th>
           <th>Req light</th>
           <th>Size</th>
           <th>Oxygen</th>
           <th>Pollution</th>
-          <th class="text-right">Btn</th>
+          <th class="text-right">Comfort</th>
         </tr>
       </thead>
       <tbody id="fish-table">
-        <tr>
-          <td>0</td>
-          <td>0</td>
-          <td>0</td>
-          <td>Small</td>
-          <td>2.5</td>
-          <td>2.5</td>
-        </tr>
+
       </tbody>
     </table>
     <div class="text-center">
@@ -48,9 +90,156 @@
 </div>
 <script type="text/javascript">
   $(document).ready(function() {
-    $("#add-fish-btn").click(function() {
-      $("#fish-table").append('<tr><td>1</td><td>'+Math.random()*10+'</td><td>'+Math.random()*10+'</td><td>Small</td><td>2.5</td><td>2.5</td></tr>');
-    });
+	
+	var discomfortIgnoreLevel = 2;
+	
+	var discomfortMul = 1;
+	var oxygenMul = 1;
+	var pollutionMul = 1;
+	
+	var maxPower = 250;
+	var maxMachinePower = 100;
+	var powerUpStep = 20;
+	var maxFish = 25;
+	var fishArray = [];
+	var tempLevel = 0;
+	var lightLevel = 0;
+	
+	var pumpPower = 0;
+	var filterPower = 0;
+	var lightPower = 0;
+	var tempPower = 0;
+	
+	var totalOxygen = 0;
+	var totalPollution = 0;
+	var totalPower = 0;
+	
+	function refreshAquariumState() {
+		totalOxygen = 0;
+		totalPollution = 0;
+		
+		for(var i = 0; i < fishArray.length; i++)
+		{
+			totalOxygen += fishArray[i]['oxygen'];
+			totalPollution += fishArray[i].pollution;
+			
+		}
+		
+		totalOxygen -= pumpPower;
+		totalOxygen = Math.min(Math.max(0, totalOxygen), 100);
+		totalPollution -= filterPower;
+		totalPollution = Math.min(Math.max(0, totalPollution), 100);
+		tempLevel = tempPower / 20;
+		lightLevel = lightPower / 20;
+		
+		totalPower = pumpPower + filterPower + lightPower + tempPower;
+		if((totalPower) > maxPower)
+		{
+			console.log("SYSTEM OVERLOAD!!!!");
+			pumpPower = 0;
+			filterPower = 0;
+			lightPower = 0;
+			tempPower = 0;
+			totalPower = 0;
+		}
+		
+		$("#total-oxygen").html(totalOxygen.toString());
+		$("#total-pollution").html(totalPollution.toString());
+		$("#total-power").html(totalPower.toString());
+		$("#pump-power").html(pumpPower.toString());
+		$("#filter-power").html(filterPower.toString());
+		$("#light-power").html(lightPower.toString());
+		$("#temp-power").html(tempPower.toString());
+		$("#temp-level").html(tempLevel.toString());
+		$("#light-level").html(lightLevel.toString());
+	}
+	function spawnFish() {
+		if(fishArray.length >= maxFish)
+		{
+			console.log("Not enough space in aquarium! Returning")
+			return;
+		}
+		var temp = Math.round(Math.random()*5);
+		var light = Math.round(Math.random()*5);
+		var size = Math.round(Math.random()+1);
+		var health = (size < 2 ? 100 : 150);
+		var oxygen = 2.5 * size;
+		var pollution = 2.5 * size;
+		var discomfort = 0;
+		var fishId = fishArray.length+1;	
+		fishArray.push({
+			"fishId": fishId,
+			"health": health,
+			"temp": temp,
+			"light": light,
+			"size": (size < 2 ? 'Small' : 'Big'),
+			"oxygen": oxygen,
+			"pollution": pollution,
+			"discomfort": 0
+			});
+		$("#fish-table").append('<tr id="fish'+fishId+'"><td>'+fishId+'</td><td>'+health+'</td><td>'+temp+'</td><td>'+light+'</td><td>'+(size < 2 ? 'Small' : 'Big')+'</td><td>'+oxygen+'</td><td>'+pollution+'</td><td>'+discomfort+'</td></tr>');
+		refreshAquariumState();
+		for(fish in fishArray)
+		{
+			console.log(fish.toString());
+		}
+		console.log("Total fish in aquarium: " + fishArray.length);
+	}
+	
+	function tick(){
+		for(var i = 0; i < fishArray.length; i++)
+		{
+			var fishHealthLoss = 0;
+			var tempDiscomfort = Math.abs(fishArray[i].temp - tempLevel);
+			var lightDiscomfort = Math.abs(fishArray[i].light - lightLevel);
+			var discomfort = Math.max(0, (tempDiscomfort + lightDiscomfort) - discomfortIgnoreLevel);
+			fishArray[i].discomfort = discomfort;
+			console.log("Fish #"+(i+1)+" discomfort is "+discomfort);
+			fishHealthLoss = (discomfort  * discomfortMul) + totalOxygen * oxygenMul + totalPollution * pollutionMul;
+			fishArray[i].health -= fishHealthLoss;
+			fishArray[i].health = Math.max(fishArray[i].health, 0);
+			$("#fish"+fishArray[i].fishId).html('<td>'+fishArray[i].fishId+'</td><td>'+fishArray[i].health+'</td><td>'+fishArray[i].temp+'</td><td>'+fishArray[i].light+'</td><td>'+fishArray[i].size+'</td><td>'+fishArray[i].oxygen+'</td><td>'+fishArray[i].pollution+'</td><td>'+fishArray[i].discomfort+'</td>');		
+		}
+	}
+	
+	function changeAquariumValue(evt){
+		switch(evt.data.valName)
+		{
+			case "pump":
+			pumpPower += (20 * evt.data.direction);
+			pumpPower = Math.min(Math.max(0, pumpPower), maxMachinePower);
+			break;
+			case "filter":
+			filterPower += (20 * evt.data.direction);
+			filterPower = Math.min(Math.max(0, filterPower), maxMachinePower);
+			break;
+			case "temperature":
+			tempPower += (20 * evt.data.direction);
+			tempPower = Math.min(Math.max(0, tempPower), maxMachinePower);
+			break;
+			case "light":
+			lightPower += (20 * evt.data.direction);
+			lightPower = Math.min(Math.max(0, lightPower), maxMachinePower);
+			break;
+			default:
+			break;
+		}
+		refreshAquariumState();
+	}
+    $("#add-fish-btn").click(spawnFish);
+    $("#btn-tick").click(tick);
+    $("#btn-inc-pump").on('click', { valName: "pump", direction: 1 }, changeAquariumValue);
+    $("#btn-dec-pump").on('click', { valName: "pump", direction: (-1) }, changeAquariumValue);
+	
+    $("#btn-inc-filter").on('click', { valName: "filter", direction: 1 }, changeAquariumValue);
+    $("#btn-dec-filter").on('click', { valName: "filter", direction: (-1) }, changeAquariumValue);
+    
+	$("#btn-inc-light").on('click', { valName: "light", direction: 1}, changeAquariumValue);
+    $("#btn-dec-light").on('click', { valName: "light", direction: (-1) }, changeAquariumValue);
+    
+	$("#btn-inc-heater").on('click', { valName: "temperature", direction: 1 }, changeAquariumValue);
+    $("#btn-dec-heater").on('click', { valName: "temperature", direction: (-1) }, changeAquariumValue);
+    
   });
 </script>
       <!-- Include all compiled plugins (below), or include individual files as needed -->
