@@ -1,0 +1,60 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Document</title>
+    <link href="css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/style.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/font-awesome.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.4/jquery.min.js"></script>
+    <style>
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+      <!-- NAVBAR -->
+  <div class="row" >
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          <th>Num</th>
+          <th>Req temperature</th>
+          <th>Req light</th>
+          <th>Size</th>
+          <th>Oxygen</th>
+          <th>Pollution</th>
+          <th class="text-right">Btn</th>
+        </tr>
+      </thead>
+      <tbody id="fish-table">
+        <tr>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>Small</td>
+          <td>2.5</td>
+          <td>2.5</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="text-center">
+      <button class="btn btn-default" type="button" id="add-fish-btn">Add Fish</button>
+    </div>
+  </div>
+</div>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#add-fish-btn").click(function() {
+      $("#fish-table").append('<tr><td>1</td><td>'+Math.random()*10+'</td><td>'+Math.random()*10+'</td><td>Small</td><td>2.5</td><td>2.5</td></tr>');
+    });
+  });
+</script>
+      <!-- Include all compiled plugins (below), or include individual files as needed -->
+      <script src="js/bootstrap.min.js"></script>
+    </body>
+</html>
+1
